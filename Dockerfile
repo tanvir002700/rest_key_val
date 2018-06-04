@@ -13,7 +13,7 @@ RUN apt-get update -yqq \
 WORKDIR /usr/src/app
 COPY Gemfile* ./
 RUN bundle install
-COPY config .
+COPY . .
 COPY ./config/database.yml.docker ./config/database.yml
 
 EXPOSE 3000
