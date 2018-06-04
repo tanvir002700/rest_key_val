@@ -2,13 +2,12 @@ class StoresController < ApplicationController
   include ParamBuilder
 
   def index
-    stores = if params[:keys].nil?
-               Store.where('validity >= ?', Time.now)
-             else
-               filter_params = build_filter_params(params[:keys])
-               puts filter_params
-               Store.where(key: filter_params).where('validity >= ?', Time.now)
-             end
+    stores = Store.where('validity >= ?', Time.now)
+    unless params[:keys].nil?
+      filter_params = build_filter_params(params[:keys])
+      stores = stores.where(key: filter_params)
+      stores.update_all(validity: Time.now + 5.minutes)
+    end
     render json: stores
   end
 
