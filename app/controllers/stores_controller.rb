@@ -6,8 +6,8 @@ class StoresController < ApplicationController
     unless params[:keys].nil?
       filter_params = build_filter_params(params[:keys])
       stores = stores.where(key: filter_params)
-      stores.update_all(validity: Time.now + 5.minutes)
     end
+    stores.update_all(validity: Time.now + 5.minutes)
     render json: stores
   end
 
@@ -19,7 +19,10 @@ class StoresController < ApplicationController
 
   def update
     formatted_params = build_store_params(store_params)
-
+    formatted_params.each do |param|
+      obj = Store.find_by(key: param[:key])
+      obj.update(value: param[:value])
+    end
   end
 
   def store_params
