@@ -1,11 +1,13 @@
 class StoresController < ApplicationController
   include ParamBuilder
 
+  before_action :set_stores, only: [:index, :update]
+
   def index
-    stores = Store.where('validity >= ?', Time.now)
+    stores = []
     unless params[:keys].nil?
       filter_params = build_filter_params(params[:keys])
-      stores = stores.where(key: filter_params)
+      stores = @stores.where(key: filter_params)
     end
     stores.update_all(validity: Time.now + 5.minutes)
     render json: stores
@@ -13,16 +15,22 @@ class StoresController < ApplicationController
 
   def create
     formatted_params = build_store_params(store_params)
-    Store.create(formatted_params)
-    render json: params
+    s = Store.create!(formatted_params)
+    render json: s
   end
 
   def update
     formatted_params = build_store_params(store_params)
     formatted_params.each do |param|
-      obj = Store.find_by(key: param[:key])
-      obj.update(value: param[:value])
+      obj = @stores.find_by(key: param[:key])
+      obj.update!(value: param[:value]) unless obj.nil?
     end
+  end
+
+  private
+
+  def set_stores
+    @stores = Store.where('validity >= ?', Time.now)
   end
 
   def store_params
