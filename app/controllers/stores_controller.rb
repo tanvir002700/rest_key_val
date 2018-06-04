@@ -1,6 +1,7 @@
 class StoresController < ApplicationController
   include ParamBuilder
 
+  before_action :delete_invalid_stores
   before_action :set_stores, only: [:index, :update]
 
   def index
@@ -28,6 +29,10 @@ class StoresController < ApplicationController
   end
 
   private
+
+  def delete_invalid_stores
+    Store.where('validity < ?', Time.now).delete_all
+  end
 
   def set_stores
     @stores = Store.where('validity >= ?', Time.now)
