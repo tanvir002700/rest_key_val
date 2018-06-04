@@ -1,23 +1,24 @@
 class StoresController < ApplicationController
   include ParamBuilder
+  include Serializer
 
   before_action :delete_invalid_stores
   before_action :set_stores, only: [:index, :update]
 
   def index
-    stores = []
+    stores = @stores
     unless params[:keys].nil?
       filter_params = build_filter_params(params[:keys])
       stores = @stores.where(key: filter_params)
     end
-    stores.update_all(validity: Time.now + 5.minutes)
-    render json: stores
+    stores.update_all(validity: Time.now + 5.minutes) unless stores.empty?
+    json_response(stores_json(stores))
   end
 
   def create
     formatted_params = build_store_params(store_params)
     s = Store.create!(formatted_params)
-    render json: s
+    json_response({ message: 'created successfully.' })
   end
 
   def update
@@ -26,6 +27,7 @@ class StoresController < ApplicationController
       obj = @stores.find_by(key: param[:key])
       obj.update!(value: param[:value]) unless obj.nil?
     end
+    json_response({message: 'update successfully.'})
   end
 
   private
